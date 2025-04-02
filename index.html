@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="R.F.KONG">
+    <meta name="keywords" content="Flow Player, Music Player, HTML5, CSS3, JavaScript">
+    <meta name="description" content="Flow Player - A simple and elegant music player.">
+    <link rel="icon" href="./img/logo.svg" type="image/x-icon">
+    <title>Flow Player</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'Segoe UI';
+            src: url('./font/font.woff2') format('woff2');
+        }
+
+        :root {
+            --primary-color: #6c5ce7;
+            --secondary-color: #a8a5e6;
+            --bg-gradient: linear-gradient(135deg, #2d3436 0%, #000000 100%);
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            background: #000;
+        }
+
+        /* 删除原有的 body::before 样式 */
+        /* 星空银河背景 */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -3;
+            background:
+                /* 柔和的宇宙底色 */
+                linear-gradient(135deg,
+                    rgba(0, 0, 0, 0.9) 0%,
+                    rgba(45, 18, 67, 0.8) 50%,
+                    rgba(12, 36, 48, 0.9) 100%),
+                /* 星云渐变 */
+                radial-gradient(circle at 70% 30%,
+                    rgba(96, 143, 168, 0.3) 0%,
+                    rgba(18, 22, 45, 0.7) 120%);
+            background-blend-mode: soft-light;
+            background-size: 400% 400%;
+            animation: galaxyFlow 40s linear infinite;
+        }
+
+        @keyframes galaxyFlow {
+            0% {
+                background-position: 0% 20%;
+            }
+
+            50% {
+                background-position: 100% 80%;
+            }
+
+            100% {
+                background-position: 0% 20%;
+            }
+        }
+
+        /* 动态星空层 */
+        .starry-sky {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            opacity: 0.8;
+        }
+
+        /* 随机分布的星星 */
+        .starry-sky::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image:
+                radial-gradient(1px 1px at 15% 25%, rgba(255, 255, 255, 0.8) 10%, transparent 80%),
+                radial-gradient(1px 1px at 85% 70%, rgba(200, 220, 255, 0.6) 10%, transparent 80%),
+                radial-gradient(1.5px 1.5px at 50% 40%, rgba(255, 255, 200, 0.7) 10%, transparent 80%);
+            background-size: 200px 250px;
+            animation: starsTwinkle 3s infinite;
+        }
+
+        /* 流星效果 */
+        .starry-sky::after {
+            content: '';
+            position: absolute;
+            width: 150px;
+            height: 1.5px;
+            top: 0;
+            left: 0;
+            background: linear-gradient(90deg,
+                    rgba(255, 255, 255, 0.1),
+                    rgba(255, 255, 255, 0.7),
+                    rgba(255, 255, 255, 0.1));
+            animation: meteor 6s linear infinite;
+            transform-origin: right center;
+            opacity: 0;
+        }
+
+        /* 星星眨眼动画 */
+        @keyframes starsTwinkle {
+
+            0%,
+            100% {
+                opacity: 0.8;
+            }
+
+            50% {
+                opacity: 0.4;
+                filter: brightness(1.2);
+            }
+        }
+
+        /* 流星动画 */
+        @keyframes meteor {
+            0% {
+                opacity: 0;
+                transform: translate(0, 0) rotate(-45deg);
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            20% {
+                transform: translate(-500px, 500px) rotate(-45deg);
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(-500px, 500px) rotate(-45deg);
+            }
+        }
+
+        /* 增加更多随机星星 */
+        .starry-sky span {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            animation: starGlow 2s infinite;
+        }
+
+        /* 随机生成星星 */
+        .starry-sky span:nth-child(1) {
+            top: 15%;
+            left: 20%;
+            width: 1px;
+            height: 1px;
+            animation-delay: 0.5s;
+        }
+
+        .starry-sky span:nth-child(2) {
+            top: 60%;
+            left: 75%;
+            width: 1.2px;
+            height: 1.2px;
+            animation-delay: 1.2s;
+        }
+
+        /* 可继续添加更多星星... */
+
+        @keyframes starGlow {
+
+            0%,
+            100% {
+                opacity: 0.3;
+                box-shadow: 0 0 3px rgba(255, 255, 255, 0.2);
+            }
+
+            50% {
+                opacity: 1;
+                box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+            }
+        }
+
+        .player-container {
+            width: 345px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .album-art {
+            width: 260px;
+            height: 260px;
+            border-radius: 15px;
+            margin: 0 auto 25px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+
+        .album-art:hover {
+            transform: rotateY(10deg) rotateX(10deg) scale(1.05);
+        }
+
+        .album-art::before {
+            content: '';
+            position: absolute;
+            inset: -25px;
+            background: conic-gradient(from 45deg,
+                    var(--primary-color),
+                    var(--secondary-color),
+                    #ff6b6b,
+                    #4ecdc4,
+                    var(--primary-color));
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            z-index: -1;
+            filter: blur(20px);
+            opacity: 0.5;
+            animation: moveGradient 8s ease-in-out infinite alternate,
+                rotateGradient 12s linear infinite;
+        }
+
+        @keyframes moveGradient {
+            0% {
+                border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            }
+
+            50% {
+                border-radius: 70% 30% 30% 70% / 70% 70% 30% 30%;
+            }
+
+            100% {
+                border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            }
+        }
+
+        @keyframes rotateGradient {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .album-art img {
+            width: 100%;
+            height: 100%;
+            border-radius: 30px;
+            object-fit: cover;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .lyrics-container {
+            height: 170px;
+            overflow: hidden;
+            margin: 20px 0;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lyrics-wrapper {
+            position: absolute;
+            height: 170px;
+            width: 300px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .lyric-line {
+            text-align: center;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            margin: 12px 0;
+            padding: 4px 0;
+            transition: all 0.3s ease;
+            opacity: 0.6;
+        }
+
+        .lyric-line.active {
+            font-weight: 520;
+            font-size: 15px;
+            width: 290px;
+            opacity: 1;
+            background: linear-gradient(90deg,
+                    #ff9191,
+                    #a8a5e6,
+                    #9cd1ff,
+                    #a4e8ff);
+            background-size: 300% auto;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            -webkit-background-clip: text;
+            animation: softGradient 8s ease-in-out infinite;
+            transform: scale(1.1);
+            text-shadow: 0 0 12px rgba(108, 92, 231, 0.2);
+        }
+
+        @keyframes softGradient {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .progress-container {
+            height: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin: 20px 0;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--primary-color);
+            border-radius: 2px;
+            position: relative;
+            transition: width 0.1s linear;
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            transform: scale(1.2);
+        }
+
+        .control-btn:not(.play-btn):hover {
+            color: var(--primary-color);
+        }
+
+        .play-btn {
+            font-size: 28px;
+            background: var(--primary-color);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        .play-btn:hover {
+            background: var(--secondary-color);
+            box-shadow: 0 4px 20px rgba(108, 92, 231, 0.6);
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .song-info {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .song-title {
+            font-size: 18px;
+            margin: 0;
+            letter-spacing: 1px;
+        }
+
+        .song-artist {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            margin: 5px 0;
+        }
+
+        .audio-source {
+            display: none;
+        }
+
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 2px;
+        }
+
+        /* 添加响应式设计 */
+        @media screen and (max-width: 480px) {
+            .player-container {
+                width: 90%;
+                padding: 20px;
+                margin: 0 10px;
+            }
+
+            .album-art {
+                width: 200px;
+                height: 200px;
+            }
+
+            .controls {
+                gap: 15px;
+            }
+
+            .control-btn {
+                font-size: 16px;
+            }
+
+            .play-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+            }
+
+            .song-title {
+                font-size: 16px;
+            }
+
+            .song-artist {
+                font-size: 12px;
+            }
+        }
+
+        /* 修改响应式设计部分 */
+        @media screen and (max-width: 480px) {
+            .player-container {
+                width: calc(100% - 40px);
+                max-width: 320px;
+                padding: 15px;
+                margin: 10px;
+            }
+
+            .album-art {
+                width: 220px;
+                height: 220px;
+                margin-bottom: 15px;
+            }
+
+            .lyrics-container {
+                height: 140px;
+                margin: 15px 0;
+            }
+
+            .lyrics-wrapper {
+                height: 140px;
+                width: 280px;
+            }
+
+            .lyric-line {
+                font-size: 13px;
+                margin: 10px 0;
+            }
+
+            .lyric-line.active {
+                font-size: 14px;
+            }
+
+            .controls {
+                gap: 20px;
+                margin-top: 10px;
+            }
+
+            .control-btn {
+                font-size: 18px;
+                padding: 8px;
+            }
+
+            .play-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 22px;
+            }
+
+            .song-title {
+                font-size: 16px;
+                margin-bottom: 4px;
+            }
+
+            .song-artist {
+                font-size: 13px;
+            }
+
+            .progress-container {
+                margin: 15px 0;
+            }
+
+            .time-display {
+                font-size: 11px;
+            }
+        }
+
+        @media screen and (max-width: 320px) {
+            .player-container {
+                padding: 12px;
+            }
+
+            .album-art {
+                width: 200px;
+                height: 200px;
+            }
+
+            .controls {
+                gap: 15px;
+            }
+
+            .play-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+            }
+        }
+
+        /* 视频背景样式 */
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -4;
+            object-fit: cover;
+        }
+
+        /* 调整其他背景层级 */
+        .bg-animation {
+            z-index: -3;
+        }
+
+        .starry-sky {
+            z-index: -2;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 添加视频背景 -->
+    <video class="video-background" id="bgVideo" autoplay muted loop playsinline>
+        <source src="./video/background.mp4" type="video/mp4">
+    </video>
+    <!-- 原有背景元素 -->
+    <div class="bg-animation"></div>
+    <div class="starry-sky">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+    <div class="player-container">
+        <audio class="audio-source" id="audio-player">
+            <source src="" type="audio/mpeg">
+        </audio>
+
+        <div class="album-art">
+            <img id="cover-image" src="https://picsum.photos/260" alt="Album Cover">
+        </div>
+
+        <div class="song-info">
+            <h2 class="song-title">Hello</h2>
+            <p class="song-artist">Flow Player</p>
+        </div>
+
+        <div class="lyrics-container">
+            <div class="lyrics-wrapper"></div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar"></div>
+            <div class="time-display">
+                <span id="current-time">00:00</span>
+                <span id="duration">00:00</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn" id="shuffle-btn"><i class="fas fa-random"></i></button>
+            <button class="control-btn" id="prev-btn"><i class="fas fa-step-backward"></i></button>
+            <button class="control-btn play-btn" id="play-btn"><i class="fas fa-play"></i></button>
+            <button class="control-btn" id="next-btn"><i class="fas fa-step-forward"></i></button>
+            <button class="control-btn" id="repeat-btn"><i class="fas fa-redo-alt"></i></button>
+        </div>
+    </div>
+
+    <script src="songs.js"></script>
+    <script src="lyrics.js"></script>
+    <script>
+        const audioPlayer = document.getElementById('audio-player');
+        const playBtn = document.getElementById('play-btn');
+        const playIcon = playBtn.querySelector('i');
+        const progressBar = document.querySelector('.progress-bar');
+        const progressContainer = document.querySelector('.progress-container');
+        const currentTimeDisplay = document.getElementById('current-time');
+        const durationDisplay = document.getElementById('duration');
+
+        // 时间格式化函数
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60);
+            return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        // 初始化播放器
+        const lyricsManager = new LyricsManager();
+
+        // 播放/暂停控制
+        playBtn.addEventListener('click', () => {
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+                playIcon.classList.replace('fa-play', 'fa-pause');
+            } else {
+                audioPlayer.pause();
+                playIcon.classList.replace('fa-pause', 'fa-play');
+            }
+        });
+
+        // 进度条和时间更新
+        audioPlayer.addEventListener('timeupdate', () => {
+            const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+            progressBar.style.width = `${progress}%`;
+            currentTimeDisplay.textContent = formatTime(audioPlayer.currentTime);
+            lyricsManager.updateLyric(audioPlayer.currentTime);
+        });
+
+        // 音频加载完成后显示总时长
+        audioPlayer.addEventListener('loadedmetadata', () => {
+            durationDisplay.textContent = formatTime(audioPlayer.duration);
+        });
+
+        // 进度条点击
+        progressContainer.addEventListener('click', (e) => {
+            const rect = progressContainer.getBoundingClientRect();
+            const clickPosition = (e.clientX - rect.left) / rect.width;
+            audioPlayer.currentTime = clickPosition * audioPlayer.duration;
+        });
+
+        // 切换歌曲函数
+        function loadSong(songData) {
+            audioPlayer.src = songData.url;
+            const coverImage = songData.cover;
+            document.getElementById('cover-image').src = coverImage;
+            document.querySelector('.song-title').textContent = songData.title;
+            document.querySelector('.song-artist').textContent = songData.artist;
+            lyricsManager.changeSong(songData.index);
+            currentTimeDisplay.textContent = "00:00";
+            durationDisplay.textContent = "00:00";
+            // 删除更新背景图片的代码
+        }
+
+        // 添加重播按钮功能
+        const repeatBtn = document.getElementById('repeat-btn');
+        let isRepeat = false;
+
+        repeatBtn.addEventListener('click', () => {
+            isRepeat = !isRepeat;
+            repeatBtn.style.color = isRepeat ? 'var(--primary-color)' : 'white';
+            audioPlayer.loop = isRepeat;
+        });
+
+        // 监听音频播放结束事件
+        audioPlayer.addEventListener('ended', () => {
+            if (!isRepeat) {
+                // 如果不是重复播放模式，可以在这里添加播放下一首的逻辑
+                playIcon.classList.replace('fa-pause', 'fa-play');
+            }
+        });
+
+        // 添加视频背景处理
+        const bgVideo = document.getElementById('bgVideo');
+        const bgAnimation = document.querySelector('.bg-animation');
+        const starrySky = document.querySelector('.starry-sky');
+
+        // 视频加载失败时显示CSS背景
+        bgVideo.addEventListener('error', () => {
+            bgVideo.style.display = 'none';
+            bgAnimation.style.zIndex = '-4';
+            starrySky.style.zIndex = '-3';
+        });
+
+        // 视频加载成功时隐藏CSS背景
+        bgVideo.addEventListener('loadeddata', () => {
+            bgVideo.style.display = 'block';
+            bgAnimation.style.opacity = '0.5';
+            starrySky.style.opacity = '0.5';
+        });
+    </script>
+</body>
+
+</html>
